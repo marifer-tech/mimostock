@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIMOSTOCK</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="CSS/styles.css">
+    <link rel="stylesheet" href="CSS/style-login.css">
+    <link rel="stylesheet" href="CSS/estoque.css">
+
+
+     <!-- JAVASCRIPT -->
+    <script src="JS/main.js" defer></script>
+    <script src="JS/produtos.js" defer></script>
+    <script src="JS/clientes.js" defer></script>
+    <script src="JS/estoque.js" defer></script>
+    <script src="JS/fornecedores.js" defer></script>
+    <script src="JS/login.js" defer></script>
+    <script src="JS/vendas.js" defer></script>
+    <script src="JS/vendedores.js" defer></script>
+</head>
+<body>
+    <!-- Tela de Login -->
+    <div id="login-section" class="main-section">
+        <img src="images/mimosa.jpg" alt="Logo da Loja Mimosa" class="login-logo">
+        <h2 style="color: #CCAA53;">MIMOSTOCK</h2>
+        <form onsubmit="login(); return false;" class="form.login">
+            <input type="text" id="username" placeholder="Usuário" onkeydown="goToNextField(event, 'password')">
+            <input type="password" id="password" placeholder="Senha" onkeydown="goToNextField(event, 'login-button')">
+            <button type="button" id="login-button" onclick="login()">Entrar</button>
+            <p id="login-message" style="color: red;"></p>
+            <p style="font-size: 11px">[CONTROLE DE ESTOQUE]</p>
+        </form>
+    </div>
+
+    <!-- Menu Principal (aparece após login) -->
+    <div id="menu-section" class="main-section" style="display: none;">
+        <h2>Painel de Controle</h2>
+        <div class="menu-buttons">
+            <button onclick="showSection('produtos')">Produtos</button>
+            <button onclick="showSection('estoque')">Estoque</button>
+            <button onclick="showSection('clientes')">Clientes</button>
+            <button onclick="showSection('vendedores')">Vendedores</button>
+            <button onclick="showSection('fornecedores')">Fornecedores</button>
+            <button onclick="showSection('vendas')">Vendas</button>
+            <button onclick="showSection('financeiro')">Financeiro</button>
+        </div>
+        <button class="logout-button" onclick="logout()">SAIR</button>
+    </div>
+
+
+
+                                            <!--SEÇÕES-->
+
+  <!-- Seção de Produtos -->
+<div id="produtos-section" class="form-section" style="display: none;">
+    <h3>Produtos</h3>
+    <button onclick="showProductForm('add')">Incluir Novo Produto</button>
+    <button onclick="showInvoiceProductForm()">Faturar Produto</button> <!-- Corrigido para chamar showInvoiceProductForm() -->
+    <button onclick="showProductList()">Listagem de Produtos</button>
+    <button class="back-button" onclick="goBack()">Voltar</button>
+</div>
+
+
+<!-- Seção de Clientes -->
+<div id="clientes-section" class="form-section" style="display: none;">
+    <h3>Clientes</h3>
+    <button onclick="showClientForm('add')">Incluir Novo Cliente</button>
+    <button onclick="showClientList()">Listagem de Clientes</button>
+    <button class="back-button" onclick="goBack()">Voltar</button>
+</div>
+
+<!-- Seção de Vendas -->
+<div id="vendas-section" class="form-section" style="display: none;">
+    <h3>Vendas</h3>
+    <button onclick="showVendaForm('realizar')">Realizar Venda</button>
+    <button onclick="showVendaForm('pesquisar')">Pesquisar Venda</button>
+    <button onclick="showVendaForm('relatorio')">Gerar Relatório de Vendas</button>
+    <button class="back-button" onclick="goBack()">Voltar</button>
+   
+</div>
+    
+<!-- Seção de Vendedores -->
+<div id="vendedores-section" class="form-section" style="display: none;">
+    <h3>Vendedores</h3>
+    <button onclick="showVendedorForm('add')">Incluir Novo Vendedor</button>
+    <button onclick="showVendedorList()">Listagem de Vendedores</button>
+    <button class="back-button" onclick="goBack()">Voltar</button>
+</div>
+
+<!-- Seção de Fornecedores -->
+<div id="fornecedores-section" class="form-section" style="display: none;">
+    <h3>Fornecedores</h3>
+    <button onclick="showFornecedorForm('add')">Incluir Novo Fornecedor</button>
+    <button onclick="showFornecedorList()">Listagem de Fornecedores</button>
+    <button class="back-button" onclick="goBack()">Voltar</button>
+</div>
+
+
+
+
+           <!-- PRODUTOS -->
+
+<!-- Formulário de Inclusão de Produto com Variações e Imagem -->
+<div id="add-product-form" class="form-section" style="display: none;">
+    <h3>Incluir Novo Produto</h3>
+    <form class="product-form">
+        <div class="form-group">
+            <label for="product-code">Código do Produto Base</label>
+            <input type="text" id="product-code" readonly>
+        </div>
+        <div class="form-group">
+            <label for="product-name">Nome do Produto</label>
+            <input type="text" id="product-name" placeholder="Nome do Produto">
+        </div>
+        <div class="form-group">
+            <label for="product-cost-price">Preço de Custo</label>
+            <input type="number" id="product-cost-price" step="0.01" placeholder="0.00" oninput="applyCurrencyMask(this)">
+        </div>
+        <div class="form-group">
+            <label for="product-sale-price">Preço de Venda</label>
+            <input type="number" id="product-sale-price" step="0.01" placeholder="0.00" oninput="applyCurrencyMask(this)">
+        </div>
+
+        <!-- Campo para upload de imagem -->
+        <div class="form-group">
+            <label for="product-image">Imagem do Produto</label>
+            <input type="file" id="product-image" accept="image/*">
+        </div>
+
+        <!-- Campos para Adicionar Variações de Tamanho -->
+        <h4>Adicionar Variações de Tamanho</h4>
+        <div class="form-group">
+            <label for="product-sizes">Selecione os Tamanhos Disponíveis:</label>
+            <div id="product-sizes" class="sizes-checkboxes">
+                <input type="checkbox" id="size-p" value="P"> <label for="size-p">P</label>
+                <input type="checkbox" id="size-m" value="M"> <label for="size-m">M</label>
+                <input type="checkbox" id="size-g" value="G"> <label for="size-g">G</label>
+                <input type="checkbox" id="size-gg" value="GG"> <label for="size-gg">GG</label>
+                <input type="checkbox" id="size-g1" value="G1"> <label for="size-g1">G1</label>
+                <input type="checkbox" id="size-g2" value="G2"> <label for="size-g2">G2</label>
+                <input type="checkbox" id="size-g3" value="G3"> <label for="size-g3">G3</label>
+            </div>
+        </div>
+
+        <!-- Campo de Seleção de Fornecedor -->
+        <div class="form-group">
+            <label for="product-supplier">Fornecedor</label>
+            <select id="product-supplier">
+                <!-- As opções serão carregadas dinamicamente pela função loadSuppliers() -->
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="product-observation">Observação</label>
+            <textarea id="product-observation" placeholder="Observação"></textarea>
+        </div>
+        <button type="button" onclick="saveProduct()">Salvar Produto com Tamanhos</button>
+    </form>
+</div>
+    
+    
+    <!-- EDIÇÃO DE PRODUTO -->
+
+    <div id="edit-product-form" class="form-section" style="display: none;">
+        <h3>Editar Produto</h3>
+        <form class="product-form">
+            <!-- Campo para Imagem -->
+            <div class="form-group">
+                <label for="edit-product-image">Imagem do Produto</label>
+                <input type="file" id="edit-product-image" accept="image/*">
+            </div>
+    
+            <!-- Código do Produto (somente leitura) -->
+            <div class="form-group">
+                <label for="edit-product-code">Código do Produto Base</label>
+                <input type="text" id="edit-product-code" readonly>
+            </div>
+    
+            <!-- Nome do Produto -->
+            <div class="form-group">
+                <label for="edit-product-name">Nome do Produto</label>
+                <input type="text" id="edit-product-name" placeholder="Nome do Produto">
+            </div>
+    
+            <!-- Preço de Custo -->
+            <div class="form-group">
+                <label for="edit-product-cost-price">Preço de Custo</label>
+                <input type="number" id="edit-product-cost-price" placeholder="0.00" step="0.01">
+            </div>
+    
+            <!-- Preço de Venda -->
+            <div class="form-group">
+                <label for="edit-product-sale-price">Preço de Venda</label>
+                <input type="number" id="edit-product-sale-price" placeholder="0.00" step="0.01">
+            </div>
+    
+            <!-- Tamanhos Disponíveis -->
+            <div class="form-group">
+                <label for="edit-product-sizes">Tamanhos Disponíveis</label>
+                <div id="edit-product-sizes" class="sizes-checkboxes">
+                    <input type="checkbox" id="size-p" value="P"> <label for="size-p">P</label>
+                    <input type="checkbox" id="size-m" value="M"> <label for="size-m">M</label>
+                    <input type="checkbox" id="size-g" value="G"> <label for="size-g">G</label>
+                    <input type="checkbox" id="size-gg" value="GG"> <label for="size-gg">GG</label>
+                    <input type="checkbox" id="size-g1" value="G1"> <label for="size-g1">G1</label>
+                    <input type="checkbox" id="size-g2" value="G2"> <label for="size-g2">G2</label>
+                    <input type="checkbox" id="size-g3" value="G3"> <label for="size-g3">G3</label>
+                </div>
+            </div>
+    
+            <!-- Fornecedor -->
+            <div class="form-group">
+                <label for="edit-product-supplier">Fornecedor</label>
+                <select id="edit-product-supplier">
+                    <option value="">Selecione um fornecedor</option>
+                    <!-- As opções serão carregadas dinamicamente -->
+                </select>
+            </div>
+    
+            <!-- Observação -->
+            <div class="form-group">
+                <label for="edit-product-observation">Observação</label>
+                <textarea id="edit-product-observation" placeholder="Observação"></textarea>
+            </div>
+    
+            <!-- Botão para salvar -->
+            <button type="button" onclick="saveEditedProduct()">Salvar Alterações</button>
+        </form>
+    </div>
+    
+    
+       
+<!-- Seção de Listagem de Produtos -->
+<div id="product-list-section" class="form-section" style="display: none;">
+    <h3>Listagem de Produtos</h3>
+    <div id="product-list"></div>
+    <button type="button" onclick="hideAllForms()">Voltar</button>
+</div>
+
+
+
+                                               <!--FATURAMENTO-->
+
+
+
+<!-- Seção de Faturamento de Produto -->
+<div id="invoice-product-form" class="form-section" style="display: none;">
+    <h3>Faturamento de Produto</h3>
+
+    <!-- Campo de busca -->
+    <div class="form-group">
+        <label for="product-search-input">Buscar Produto:</label>
+        <input
+            type="text"
+            id="product-search-input"
+            placeholder="Digite o código ou nome do produto"
+            oninput="searchProduct()"
+        />
+    </div>
+
+    <!-- Botão para listar todos os produtos -->
+    <button type="button" onclick="searchProduct()">Exibir Todos os Produtos</button>
+
+    <!-- Resultados da busca -->
+    <div id="product-results"></div>
+
+    <!-- Detalhes do produto selecionado -->
+    <div id="invoice-product-details" style="display: none;">
+        <h4>Detalhes do Produto Selecionado</h4>
+        <div id="selected-product-details"></div>
+        <input type="hidden" id="selected-product-code" />
+
+        <!-- Campo para o novo preço de venda -->
+        <div class="form-group">
+            <label for="new-sale-price">Novo Preço de Venda (R$):</label>
+            <input
+                type="number"
+                id="new-sale-price"
+                step="0.01"
+                placeholder="0,00"
+                oninput="applyCurrencyMask(this)"
+            />
+        </div>
+
+        <!-- Botão para atualizar o preço -->
+        <button type="button" onclick="invoiceProduct()">Atualizar Preço de Venda</button>
+    </div>
+
+    <!-- Mensagem de sucesso ou erro -->
+    <p id="invoice-message" style="color: green;"></p>
+</div>
+
+
+             
+
+
+                                         <!--Clientes -->
+    <!-- Formulário de Inclusão de Clientes -->
+    <div id="add-client-form" class="form-section" style="display: none;">
+        <h3>Incluir Novo Cliente</h3>
+        <form class="client-form">
+            <div class="form-group">
+                <label for="client-code">Código do Cliente</label>
+                <input type="text" id="client-code" readonly>
+            </div>
+            <div class="form-group">
+                <label for="client-name">Nome do Cliente</label>
+                <input type="text" id="client-name" placeholder="Nome do Cliente">
+            </div>
+            <div class="form-group">
+                <label for="client-contact">Telefone</label>
+                <input type="text" id="client-contact" placeholder="Telefone">
+            </div>
+            <div class="form-group">
+                <label for="client-size">Tamanho Preferido</label>
+                <input type="text" id="client-size" placeholder="Tamanho Preferido">
+            </div>
+            <div class="form-group">
+                <label for="client-obs">Observações</label>
+                <textarea id="client-obs" placeholder="Observações"></textarea>
+            </div>
+            <button type="button" onclick="saveClient()">Salvar Cliente</button>
+        </form>
+    </div>
+
+    <!-- Seção de Listagem de Clientes -->
+    <div id="client-list-section" class="form-section" style="display: none;">
+        <h3>Listagem de Clientes</h3>
+        <div id="client-list"></div>
+        <button type="button" onclick="hideAllForms()">Voltar</button>
+    </div>
+
+</body>
+
+
+
+                                                    <!-- VENDAS -->
+
+  <!-- Formulário para Realizar Venda -->
+  <div id="realizar-venda-form" style="display: none;">
+    <h4>Realizar Venda</h4>
+    <div class="form-group">
+        <label for="sale-client">Selecionar Cliente</label>
+        <select id="sale-client"></select>
+    </div>
+    <div class="form-group">
+        <label for="sale-product">Selecionar Produto</label>
+        <select id="sale-product" onchange="updateProductQuantity()"></select>
+    </div>
+    <div class="form-group">
+        <label for="sale-quantity">Quantidade</label>
+        <input type="number" id="sale-quantity" min="1" placeholder="Quantidade a vender">
+    </div>
+    <div class="form-group">
+        <label for="sale-vendedor">Vendedor</label>
+        <input type="text" id="sale-vendedor" placeholder="Nome do Vendedor">
+    </div>
+    <button type="button" onclick="processSale()">Confirmar Venda</button>
+    <p id="sale-message"></p>
+</div>
+
+<!-- Formulário para Pesquisar Vendas -->
+<div id="pesquisar-venda-form" style="display: none;">
+    <h4>Pesquisar Venda</h4>
+    <div class="form-group">
+        <label for="search-date">Data</label>
+        <input type="date" id="search-date">
+    </div>
+    <div class="form-group">
+        <label for="search-client">Cliente</label>
+        <input type="text" id="search-client" placeholder="Nome ou Código do Cliente">
+    </div>
+    <div class="form-group">
+        <label for="search-product">Produto</label>
+        <input type="text" id="search-product" placeholder="Nome ou Código do Produto">
+    </div>
+    <div class="form-group">
+        <label for="search-vendedor">Vendedor</label>
+        <input type="text" id="search-vendedor" placeholder="Nome do Vendedor">
+    </div>
+    <button type="button" onclick="searchSales()">Pesquisar</button>
+    <div id="search-results"></div>
+</div>
+
+<!-- Formulário para Gerar Relatório de Vendas -->
+<div id="relatorio-venda-form" style="display: none;">
+    <h4>Relatório de Vendas</h4>
+    <div class="form-group">
+        <label for="report-start-date">Data Início</label>
+        <input type="date" id="report-start-date">
+    </div>
+    <div class="form-group">
+        <label for="report-end-date">Data Fim</label>
+        <input type="date" id="report-end-date">
+    </div>
+    <div class="form-group">
+        <label for="report-client">Cliente</label>
+        <input type="text" id="report-client" placeholder="Nome ou Código do Cliente">
+    </div>
+    <div class="form-group">
+        <label for="report-product">Produto</label>
+        <input type="text" id="report-product" placeholder="Nome ou Código do Produto">
+    </div>
+    <div class="form-group">
+        <label for="report-vendedor">Vendedor</label>
+        <input type="text" id="report-vendedor" placeholder="Nome do Vendedor">
+    </div>
+    <button type="button" onclick="generateReport()">Gerar Relatório</button>
+    <div id="report-results"></div>
+</div>
+</div>
+
+
+
+                             <!-- VENDEDORES -->
+
+<!-- Formulário de Cadastro/Edição de Vendedor -->
+<div id="add-vendedor-form" class="form-section" style="display: none;">
+    <h3 id="vendedor-form-title">Incluir Novo Vendedor</h3>
+    <form class="vendedor-form">
+        <div class="form-group">
+            <label for="vendedor-code">Código do Vendedor</label>
+            <input type="text" id="vendedor-code" readonly>
+        </div>
+        <div class="form-group">
+            <label for="vendedor-name">Nome do Vendedor</label>
+            <input type="text" id="vendedor-name" placeholder="Nome do Vendedor">
+        </div>
+        <div class="form-group">
+            <label for="vendedor-contact">Telefone</label>
+            <input type="text" id="vendedor-contact" placeholder="Telefone">
+        </div>
+        <div class="form-group">
+            <label for="vendedor-stock">Estoque Vinculado</label>
+            <select id="vendedor-stock">
+                <option value="big-pack-1">BIG-PACK-1</option>
+                <option value="big-pack-2">BIG-PACK-2</option>
+            </select>
+        </div>
+        <button type="button" onclick="saveVendedor()">Salvar Vendedor</button>
+    </form>
+</div>
+
+<!-- Seção de Listagem de Vendedores -->
+<div id="vendedor-list-section" class="form-section" style="display: none;">
+    <h3>Listagem de Vendedores</h3>
+    <div id="vendedor-list"></div>
+    <button type="button" onclick="hideAllForms()">Voltar</button>
+</div>
+
+                      <!-- FORNECEDOR -->
+
+<!-- Formulário de Cadastro de Fornecedor -->
+<div id="add-fornecedor-form" class="form-section" style="display: none;">
+    <h3 id="fornecedor-form-title">Incluir Novo Fornecedor</h3>
+    <form class="fornecedor-form">
+
+        <div class="form-group">
+            <label for="fornecedor-code">Código do Fornecedor</label>
+            <input type="text" id="fornecedor-code" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="fornecedor-image">Imagem</label>
+                <input type="file" id="fornecedor-image" accept="image/*">
+            </div>
+
+            <div class="form-group">
+            <label for="fornecedor-name">Nome da Empresa</label>
+            <input type="text" id="fornecedor-name" placeholder="Nome da Empresa">
+        </div>
+
+        <div class="form-group">
+            <label for="fornecedor-cnpj">CNPJ</label>
+            <input type="text" id="fornecedor-cnpj" placeholder="CNPJ" maxlength="18" oninput="applyCNPJMask(this)">
+        </div>
+
+        <div class="form-group">
+            <label for="fornecedor-url">URL</label>
+            <input type="url" id="fornecedor-url" placeholder="URL do site">
+        </div>
+        
+        <div class="form-group">
+            <label for="fornecedor-contact1">Telefone de Contato 1</label>
+            <input type="tel" id="fornecedor-contact1" placeholder="Telefone de Contato 1">
+        </div>
+        <div class="form-group">
+            <label for="fornecedor-contact2">Telefone de Contato 2</label>
+            <input type="tel" id="fornecedor-contact2" placeholder="Telefone de Contato 2">
+        </div>
+        <div class="form-group">
+            <label for="fornecedor-contact3">Telefone de Contato 3</label>
+            <input type="tel" id="fornecedor-contact3" placeholder="Telefone de Contato 3">
+        </div>
+        <div class="form-group">
+            <label for="fornecedor-observation">Observação</label>
+            <textarea id="fornecedor-observation" placeholder="Observação"></textarea>
+        </div>
+        <button type="button" onclick="saveFornecedor()">Salvar Fornecedor</button>
+    </form>
+</div>
+
+<!-- Listagem de Fornecedores -->
+<div id="fornecedor-list-section" class="form-section" style="display: none;">
+    <h3>Listagem de Fornecedores</h3>
+    <div id="fornecedor-list"></div>
+    <button type="button" onclick="hideAllForms()">Voltar</button>
+</div>
+
+                                            <!--ESTOQUE-->
+
+
+ <!-- Seção de Estoque -->
+<div id="estoque-section" class="form-section" style="display: none;">
+    <h3>Gerenciamento de Estoques</h3>
+
+    <!-- Entrada no Estoque Principal -->
+    <div>
+        <h4>Entrada no Estoque Principal</h4>
+        <label for="product-code-name">Código ou Nome do Produto:</label>
+        <input type="text" id="product-code-name" placeholder="Exemplo: P1 ou Camiseta Branca">
+        <label for="entry-quantity">Quantidade:</label>
+        <input type="number" id="entry-quantity" placeholder="Quantidade a adicionar" min="1">
+        <button onclick="addToMainStock()">Confirmar Entrada</button>
+    </div>
+
+    <hr>
+
+    <!-- Redistribuição de Produtos -->
+    <div>
+        <h4>Redistribuição de Produtos</h4>
+        <div id="estoque-principal-display"></div>
+        <label for="target-stock">Estoque de Destino:</label>
+        <select id="target-stock">
+            <option value="bigPack1">Big-Pack1</option>
+            <option value="bigPack2">Big-Pack2</option>
+        </select>
+        <button onclick="redistributeStock()">Redistribuir</button>
+    </div>
+
+    <hr>
+
+    <!-- Consulta Estoque -->
+    <div>
+        <h4>Consulta de Estoque</h4>
+        <label for="search-term">Buscar Produto:</label>
+        <input type="text" id="search-term" placeholder="Digite código ou nome do produto" oninput="searchStock()">
+        <div id="stock-results"></div>
+    </div>
+</div>
+       
